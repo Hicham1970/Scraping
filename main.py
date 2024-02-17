@@ -1,47 +1,45 @@
 import requests
 from bs4 import BeautifulSoup
-from pprint import pprint
 
 
-url="https://books.toscrape.com"
-response = requests.get(url, timeout=5)
+url = "https://books.toscrape.com"
+response = requests.get(url)
+
+soup = BeautifulSoup(response.text, "html.parser")
+
+# We want to have all the names of the categories in the sidebar on the page
+
+aside = soup.find("div", {"class": "side_categories"})
+
+categories_div = aside.find("ul").find("li").find("ul")
+
+categories = [child.text.strip()
+              for child in categories_div.children if child.name]
+# print(categories)
 
 
-soupe = BeautifulSoup(response.text, 'html.parser')
-# print(soupe.prettify() )  # to print the whole HTML content of the webpage in a pretty format
+# for category in categories.children:
+#     if category.name:
+#         print(category.text.strip())
 
-#To print all the images in the script using the biblio pprint
-# images = soupe.find_all('img')
-# pprint(images)
+# Now we want to get some attributes from html elements images for example the attribute "src"
 
+images_section = soup.find("section").find_all("img")
 
-# to get all the articles with the class name "product_pod":
+images =[image["src"] for image in images_section ]
+# print("\nImages:\n")
 
-# articles = soupe.find_all('article', class_="product_pod")
-# pprint(articles)
+# for image in images:
+#     print(image.get("src"))
 
-# to get the aside:
-aside = soupe.find('aside', class_="sidebar")
+# Now we want to get the titles of the books, the title is found in the second
+#tag a inside an article with a class "product_pod", found all the article by his class, the second tag <a>
+#and the title of the books is in the attribute "title" of the <a> tag
+# then we display the title by the method .get('title'), it gives None if the attribute is not found.
 
-# for child in aside.children:
-#     if child.name :
-#         print("Child Name: ",child.name)
-
-
-# to get the div with the class aside-categories inside the aside  element and then find all the <a> tags within it:
-
-asideCategories = aside.find('div', class_="side_categories")
-# h3 = asideCategories.find_all('h3')
-ul = asideCategories.find('ul')
-li = ul.find_all('li')
-
-
-# print(asideCategories.prettify())
-# print(li)
-
-# to get all the <a> tags within the aside element:
-categoryLinks = li[0].find_all('a')   # it will return like aside.find_all('a')
-pprint(categoryLinks)
-
-# links = aside.find_all('a')
-# pprint(links)
+articles = soup.find_all("article", class_="product_pod")
+for article in articles:
+    links = article.find_all("a") # Get all the <a> tag inside the article
+    if len(links)>= 2:
+        link=links[1]
+        print(link.get('title'))

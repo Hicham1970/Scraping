@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from pprint import pprint
 
+
 url="https://books.toscrape.com"
 response = requests.get(url, timeout=5)
 
@@ -22,15 +23,25 @@ soupe = BeautifulSoup(response.text, 'html.parser')
 # to get the aside:
 aside = soupe.find('aside', class_="sidebar")
 
-for child in aside.children:
-    if child.name :
-        print("Child Name: ",child.name)
+# for child in aside.children:
+#     if child.name :
+#         print("Child Name: ",child.name)
 
 
 # to get the div with the class aside-categories inside the aside  element and then find all the <a> tags within it:
 
 asideCategories = aside.find('div', class_="side_categories")
 # h3 = asideCategories.find_all('h3')
-# ul = asideCategories.find_all('ul')
+ul = asideCategories.find('ul')
+li = ul.find_all('li')
 
-print(asideCategories.prettify())
+
+# print(asideCategories.prettify())
+# print(li)
+
+# to get all the <a> tags within the aside element:
+categoryLinks = li[0].find_all('a')   # it will return like aside.find_all('a')
+pprint(categoryLinks)
+
+# links = aside.find_all('a')
+# pprint(links)

@@ -6,7 +6,8 @@ from pprint import pprint
 
 
 url = "https://books.toscrape.com"
-response = requests.get(url)
+response = requests.get(url, timeout=5)
+
 
 soup = BeautifulSoup(response.text, "html.parser")
 

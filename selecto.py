@@ -10,7 +10,7 @@ logger.add("books.log", rotation="500kb", level="WARNING")
 logger.add(sys.stderr, level="INFO")
 
 url = "https://books.toscrape.com/index.html"
-re = requests.get(url)
+re = requests.get(url, timeout=5)
 
 tree = HTMLParser(re.text)
 soup = BeautifulSoup(re.text, "html.parser")

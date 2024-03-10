@@ -1,0 +1,2 @@
+2024-03-10 17:54:44.903 | ERROR    | __main__:extract_price_from_page:81 - Aucun nombre n' a été trouvé dans :  ased: list index out of range
+2024-03-10 17:59:14.422 | ERROR    | __main__:extract_price_from_page:74 - No price node found

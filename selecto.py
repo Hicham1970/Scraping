@@ -22,5 +22,7 @@ first_link_soup = soup.select_one("a")
 all_link_tree = tree.css("a")
 first_link_tree = tree.css_first("a")
 
+price = tree.css_first("p.price_color")
 
-print(all_link_tree)
+# print(all_link_tree)
+print(price.text())

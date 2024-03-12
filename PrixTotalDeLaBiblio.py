@@ -1,6 +1,7 @@
 import sys
 from typing import List
 import re
+from urllib.parse import urljoin
 
 from selectolax.parser import HTMLParser
 from loguru import logger
@@ -11,7 +12,7 @@ logger.remove()
 logger.add(f'books.log', rotation="500kb", level="WARNING")
 logger.add(sys.stderr, level="INFO")
 
-
+Url_De_Base ="https://books.toscrape.com/index.html"
 
 def get_all_books_urls(url: str) -> list[str]:
     """
@@ -22,7 +23,7 @@ def get_all_books_urls(url: str) -> list[str]:
     pass
 
 
-def get_next_page(tree: HTMLParser) -> str:
+def get_next_page_url(tree: HTMLParser) -> str:
     """
      But : Récupérer l'url de la page suivante a partir du html d'une page donnée
      Args:tree : Objet HTMLParser contenant le code html d'une page
@@ -31,22 +32,27 @@ def get_next_page(tree: HTMLParser) -> str:
     pass
 
 
-def get_all_books_url(tree: HTMLParser, page_number: int) -> List:
+def get_all_books_urls_on_page(tree: HTMLParser) -> List:
     """
     But: Récupére les urls de tous les livres sur une page donnée
      Args:tree : Objet HTMLParser contenant le code html d'une page
      Returns : str[url]:Liste des  Urls de tous les livres de la page 
     """
-    pass
-
-
+    try:
+        books_links_nodes = tree.css("h3 > a")
+        return [urljoin(Url_De_Base, link.attributes["href"]) for link in books_links_nodes if "href" in link.attributes] # selectionne tout les noeuds qui ont un attribut href # selectionne tout les noeuds qui ont un attribut href
+        
+    except Exception as e:
+        logger.error(f"Erreur lors de k'extraction des urls des livres : {e}")
+        return []
+    # print(books_links_nodes[0].attributes["href"])
 
 def get_book_price(url: str) -> float:
     """
     But : 1erement ; Récupére le prix d'un livre à partir de son url
     Args: url (str):url de la page du live
     Returns: float: Prix du livre multiplié par le nombre d'exemplaires disponibles
-    """
+    """     
     try:
         res = requests.get(url, timeout=5)
         res.raise_for_status()
@@ -71,7 +77,7 @@ def extract_price_from_page(tree: HTMLParser) -> float:
     if price_node:
         price_string = price_node.text()
     else:
-        logger.error("No price node found")
+        logger.error("Aucun prix n' a été trouvé dans la page")
         return 0.0
 
     try:
@@ -92,7 +98,16 @@ def extract_stock_quantity_from_page(tree: HTMLParser) -> int:
     Args:tree (HTMLParser): Objet HTMLParser contenant le code html de la page du livre
     Returns: int: la quantité disponible du livre
     """
-    return 1
+    try:    
+        stock_node = tree.css_first("p.instock.availability")
+        return int(re.findall(r"[0-9]+", stock_node.text())[0])
+    except AttributeError as e:
+        logger.error(f"Aucun noeud n' a été trouvé dans la page : {e}")
+        return 0
+    except IndexError as e:
+        logger.error(f"Aucun nombre n' a été trouvé dans le noued : {e}")
+        return 0
+        
 
 
 def main():
@@ -109,8 +124,9 @@ def main():
 
 
 if __name__ == '__main__':
-    url="https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html"
-    get_book_price(url=url)
+    r = requests.get(Url_De_Base)
+    tree=HTMLParser(r.text)
+    get_all_books_urls_on_page(tree=tree) 
 
 
 #* Functions to code:
